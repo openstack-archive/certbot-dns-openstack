@@ -1,0 +1,6 @@
+[run]
+branch = True
+source = certbot_dns_openstack
+
+[report]
+ignore_errors = True
