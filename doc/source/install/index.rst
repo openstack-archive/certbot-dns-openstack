@@ -14,4 +14,4 @@ The certbot-dns-openstack service (certbot_dns_openstack) provides...
 
 This chapter assumes a working setup of OpenStack following the
 `OpenStack Installation Tutorial
-<https://docs.openstack.org/project-install-guide/ocata/>`_.
+<https://docs.openstack.org/rocky/install/>`_.
