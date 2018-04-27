@@ -16,6 +16,7 @@ import logging
 import zope.interface
 
 from certbot import interfaces
+from certbot import errors
 from certbot.plugins import dns_common
 
 from openstack.config import loader
@@ -40,7 +41,7 @@ class Authenticator(dns_common.DNSAuthenticator):
     def add_parser_arguments(cls, add):  # pylint: disable=arguments-differ
         super(Authenticator, cls).add_parser_arguments(
             add, default_propagation_seconds=30)
-        add('client_config', help='OpenStack Client Config file.')
+        add('config', help='OpenStack Client Config file.')
         add('cloud', help='OpenStack to use.')
 
     def more_info(self):  # pylint: disable=missing-docstring,no-self-use
@@ -48,7 +49,7 @@ class Authenticator(dns_common.DNSAuthenticator):
                'dns-01 challenge using the OpenStack DNS API.'
 
     def _setup_credentials(self):
-        config_file = self.conf('client_config') or ''
+        config_file = self.conf('config') or ''
         config = loader.OpenStackConfig(
             config_files=loader.CONFIG_FILES + [config_file])
         self.cloud = connection.Connection(
@@ -58,10 +59,19 @@ class Authenticator(dns_common.DNSAuthenticator):
         )
 
     def _perform(self, domain, validation_name, validation):
-        self.zone = self.cloud.get_zone(domain + '.')
+        domain_name_guesses = dns_common.base_domain_name_guesses(domain)
+        for domain in domain_name_guesses:
+            self.zone = self.cloud.get_zone(domain + '.')
+            if self.zone is not None:
+                break
+        if self.zone is None:
+            raise errors.PluginError(
+                'Unable to determine zone identifier for {0} using '
+                'zone names: {1}'.format(domain, domain_name_guesses))
         self.recordset = self.cloud.create_recordset(
             self.zone['id'], validation_name + '.', "TXT", [validation])
 
     def _cleanup(self, domain, validation_name, validation):
-        self.cloud.delete_recordset(
-            self.zone['id'], self.recordset['id'])
+        if getattr(self, 'recordset', False):
+            self.cloud.delete_recordset(
+                self.zone['id'], self.recordset['id'])

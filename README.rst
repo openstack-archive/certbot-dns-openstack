@@ -4,16 +4,26 @@ certbot-dns-openstack
 
 OpenStack DNS Authenticator plugin for Certbot
 
-Please fill here a long description which must be at least 3 lines wrapped on
-80 cols, so that distribution package maintainers can use it in their packages.
-Note that this is a hard requirement.
+To Install:
+
+``pip install certbot-dns-openstack``
+
+To run: 
+
+``certbot -a certbot-dns-openstack:dns-openstack certonly -d example.com``
+
+This uses ``os-client-config`` ``clouds.yaml`` for configuring the user access
+which by default will look in ``~/.config/openstack/clouds.yaml``, 
+and ``/etc/openstack/clouds.yaml``. If your ``clouds.yaml`` file is stored else
+where, you can add by adding 
+``--certbot-dns-openstack:dns-openstack-config /path/to/clouds.yaml`` to the 
+command.
 
 * Free software: Apache license
-* Documentation: https://docs.openstack.org/certbot-dns-openstack/latest
 * Source: https://git.openstack.org/cgit/openstack/certbot-dns-openstack
 * Bugs: https://bugs.launchpad.net/certbot-dns-openstack
 
 Features
 --------
 
-* TODO
+* dns-01 ACME challenge
